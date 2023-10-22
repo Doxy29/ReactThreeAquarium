@@ -31,7 +31,7 @@ type GLTFResult = GLTF & {
 
 type FishProps = JSX.IntrinsicElements['group'] & {
     pushRef?: (ref: any) => void,
-    velocity: Vector3,
+    velocity?: Vector3,
     position?: Vector3,
     acc?: Vector3,
 }
@@ -40,9 +40,11 @@ type ContextType = Record<string, React.ForwardRefExoticComponent<JSX.IntrinsicE
 
 export default function FishModel(props: FishProps) {
   const { nodes, materials } = useGLTF('/Models/Fish.gltf') as GLTFResult
+    const initRotation = new Euler( Math.PI/2, 0, 0, 'XYZ' )
+    //const initRotation = new Euler( Math.PI/2, 0, 0, 'XYZ' )
   return (
-    <group {...props} 
-           
+    <group {...props}
+            name={props.name}
            dispose={null}
            ref={(ref)=>{
                if(ref && props.pushRef){
@@ -50,15 +52,15 @@ export default function FishModel(props: FishProps) {
                }
            }}
     >
-      <mesh rotation={new Euler( Math.PI/2, 0, 0, 'XYZ' )}  geometry={nodes.Cube.geometry} material={materials['Material.002']} />
-      <mesh rotation={new Euler( Math.PI/2, 0, 0, 'XYZ' )}  geometry={nodes.Plane.geometry} material={materials['Material.002']} />
-      <mesh rotation={new Euler( Math.PI/2, 0, 0, 'XYZ' )}  geometry={nodes.Plane001.geometry} material={materials['Material.001']} />
-      <mesh rotation={new Euler( Math.PI/2, 0, 0, 'XYZ' )}  geometry={nodes.Plane002.geometry} material={materials['Material.001']} />
-      <mesh rotation={new Euler( Math.PI/2, 0, 0, 'XYZ' )}  geometry={nodes.Plane003.geometry} material={materials['Material.001']} />
-      <mesh rotation={new Euler( Math.PI/2, 0, 0, 'XYZ' )}  geometry={nodes.Plane004.geometry} material={materials['Material.001']} />
-      <mesh rotation={new Euler( Math.PI/2, 0, 0, 'XYZ' )}  geometry={nodes.Plane005.geometry} material={materials['Material.001']} />
-      <mesh rotation={new Euler( Math.PI/2, 0, 0, 'XYZ' )}  geometry={nodes.Sphere.geometry} material={materials['Material.003']} />
-      <mesh rotation={new Euler( Math.PI/2, 0, 0, 'XYZ' )}  geometry={nodes.Sphere001.geometry} material={materials['Material.001']} />
+      <mesh rotation={initRotation}  geometry={nodes.Cube.geometry} material={materials['Material.002']} />
+      <mesh rotation={initRotation}  geometry={nodes.Plane.geometry} material={materials['Material.002']} />
+      <mesh rotation={initRotation}  geometry={nodes.Plane001.geometry} material={materials['Material.001']} />
+      <mesh rotation={initRotation}  geometry={nodes.Plane002.geometry} material={materials['Material.001']} />
+      <mesh rotation={initRotation}  geometry={nodes.Plane003.geometry} material={materials['Material.001']} />
+      <mesh rotation={initRotation}  geometry={nodes.Plane004.geometry} material={materials['Material.001']} />
+      <mesh rotation={initRotation}  geometry={nodes.Plane005.geometry} material={materials['Material.001']} />
+      <mesh rotation={initRotation}  geometry={nodes.Sphere.geometry} material={materials['Material.003']} />
+      <mesh rotation={initRotation}  geometry={nodes.Sphere001.geometry} material={materials['Material.001']} />
     </group>
   )
 }

@@ -2,65 +2,46 @@
 import React, {useCallback, useRef} from "react";
 import Fish from "./components/Fish";
 import FishModel from "./components/FishModel";
-import {randomVector3} from "../../Utilities";
+import {addV, randomVector3} from "../../Utilities";
 import {useFrame} from "@react-three/fiber";
 import {Vector3} from "three";
-
-
+import {Line} from "@react-three/drei"
 type Axis = "x"|"y"|"z"
 type ThreeNumArray = [number,number,number]
-
-//Constants---------------------------------------------------------------//
-const threeAxis:Axis[] = ["x","y","z"]
-
-const xAxis = new Vector3(1,0,0)
-const yAxis = new Vector3(0,1,0)
-const zAxis = new Vector3(0,0,1)
-const zxAxis = new Vector3(1,1,0)
-
-const fishNr = 100
-const maxVelocity = {x:0.08,y:0.02,z:0.08}
-const aqSize: ThreeNumArray = [100,60,80]
-const barrier = {x:{min:0,max:0},y:{min:0,max:0},z:{min:0,max:0}}
-const barrierOffset = 10
-threeAxis.forEach((axis,index)=>{
-    barrier[axis] = {
-        min: barrierOffset*1.5 - aqSize[index]/2,
-        max: aqSize[index]/2 - barrierOffset
-    }
-})
-const turnRate = 0.000008
-const fishInitPositionRange:ThreeNumArray = [barrier.x.max,barrier.y.max,barrier.z.max]
-//------------------------------------------------------------------------//
-
-
-
-
 const Aquarium = () => {
+    //Constants---------------------------------------------------------------//
+    const threeAxis:Axis[] = ["x","y","z"]
+
+    const xAxis = new Vector3(1,0,0)
+    const yAxis = new Vector3(0,1,0)
+    const zAxis = new Vector3(0,0,1)
+    const zxAxis = new Vector3(1,1,0)
+
+    const fishNr = 1
+    const maxVelocity = {x:0.08,y:0.02,z:0.08}
+    
+    const aqSize: ThreeNumArray = [100,60,80]
+    const barrier = {x:{min:0,max:0},y:{min:0,max:0},z:{min:0,max:0}}
+    const barrierOffset = 10
+    threeAxis.forEach((axis,index)=>{
+        barrier[axis] = {
+            min: barrierOffset*2 - aqSize[index]/2,
+            max: aqSize[index]/2 - barrierOffset
+        }
+    })
+    const turnRate = 0.000008
+    const fishInitPositionRange:ThreeNumArray = [barrier.x.max,barrier.y.max,barrier.z.max]
+    //------------------------------------------------------------------------//
+    
     const fishRefs = useRef<any[]>([])
     let show = 0
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    const moveFish = useCallback((fish:any, allFish:any[])=>{
-        
-        const xz = new Vector3(fish.velocity.x,0,fish.velocity.z)
-        
-        const roll = Math.atan2(fish.velocity.z * -1,fish.velocity.x)
-        const pitch = fish.velocity.angleTo(yAxis)
-        
-        fish.rotation.y =   roll 
-        fish.rotation.z = - pitch
+    const calcFishMovment = useCallback((fish:any, allFish:any[])=>{
 
+        const {azimuth, elevation} = rotateFishToVector(fish);
+        
+        
         
         threeAxis.forEach((curAxis,index)=>{
             
@@ -76,48 +57,65 @@ const Aquarium = () => {
             }else{
                 velocity = velocity + acc
             }
-            position = position + velocity
             
-            
-            
-            fish.position[curAxis] = position
+            fish.position[curAxis] = position + velocity
             fish.velocity[curAxis] = velocity
             fish.acc[curAxis] = acc
         })
 
         //1 time log for each fish
-        if(show < fishNr){
-            console.log(xz, pitch, "fish")
-            show++
+        if(show < fishNr*1000){
+            if(fish.name=== "fish0"){
+                console.log(fish.rotation.y, azimuth, "fish")
+                show++
+            }
         }
         
     },[threeAxis, yAxis])
 
+    //OBSTACLE AVOIDANCE--------------------------------------------------------------------------------------
     const avoidWall = (coord: number, curAxis:Axis, acc:number) => {
         if(coord < barrier[curAxis].min){
             const distance =  coord - barrier[curAxis].min
-            return acc + turnRate  
-        }else if(coord> barrier[curAxis].max){
+            return acc + turnRate * 2  
+        }else if(coord > barrier[curAxis].max){
             
             return acc - turnRate
         }else{
             return 0
         }
-        
-        
-        
     }
-  
+    
+    //ROTATE FISH---------------------------------------------------------------------------------------------
+    const rotateFishToVector = useCallback((fish:any) => {
+        //const xz = new Vector3(fish.velocity.x,0,fish.velocity.z)
 
-    useFrame(({clock})=>{
+        const azimuth = Math.atan2(fish.velocity.z * -1,fish.velocity.x)
+        const elevation = -fish.velocity.angleTo(yAxis)
+        
+        fish.rotation.y =  azimuth
+        fish.rotation.z =  elevation
+        
+        return {azimuth, elevation}
+    },[])
+
+    //MOVE FISH -not implemented------------------------------------------------------------------------------
+    const moveFish = useCallback((fish:any) => {
+
+        fish.position = addV(fish.position, fish.velocity)
+    },[])
+
+    //ANIMATION FRAME-----------------------------------------------------------------------------------------
+    useFrame((root,)=>{
+        //console.log(root, 'clock');
         fishRefs.current.forEach((fish)=>{
-            moveFish(fish, fishRefs.current)
+            calcFishMovment(fish, fishRefs.current)
         })
     })
     
     const _fishes = Array.from({length:fishNr},(_,i:number)=>{
         const position = randomVector3(fishInitPositionRange)
-        const velocity = randomVector3([maxVelocity.x,maxVelocity.y,maxVelocity.z],[maxVelocity.x/1.2,maxVelocity.y/1.2,maxVelocity.z/1.2])
+        const velocity = randomVector3([maxVelocity.x,maxVelocity.y,maxVelocity.z],[maxVelocity.x,maxVelocity.y/1.2,maxVelocity.z])
         
         // For debuging ********************* 
         //const position = new Vector3(i * -8,0,0)
@@ -137,9 +135,11 @@ const Aquarium = () => {
                     //velocity={velocity[i.toString()]}
                     acc={new Vector3(0,0,0)}
                     key={`fish${i}`}
+                    name={`fish${i}`}
                     pushRef={(ref)=> fishRefs.current.push(ref)}
                     position={position}
                 />
+                {/*<Line points={[[0,0,0],new Vector3(5,5,5]} lineWidth={5} color="black"    />*/}
             </>
                 
         )
