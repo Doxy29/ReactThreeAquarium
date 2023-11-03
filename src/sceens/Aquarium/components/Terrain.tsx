@@ -8,7 +8,7 @@ const Terrain =()=>{
         <Plane
             args={[150,150]}
             rotation-x={-Math.PI/2}
-            position-y={-30}
+            position-y={-50}
         />
          
     )

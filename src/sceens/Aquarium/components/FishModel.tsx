@@ -61,6 +61,13 @@ export default function FishModel(props: FishProps) {
       <mesh rotation={initRotation}  geometry={nodes.Plane005.geometry} material={materials['Material.001']} />
       <mesh rotation={initRotation}  geometry={nodes.Sphere.geometry} material={materials['Material.003']} />
       <mesh rotation={initRotation}  geometry={nodes.Sphere001.geometry} material={materials['Material.001']} />
+        {   props.name === "fish0" &&
+
+            <mesh visible={true} userData={{ hello: 'world' }}>
+                <sphereGeometry args={[10, 8, 8]} />
+                <meshStandardMaterial color="red" transparent={true} opacity={0.1} />
+            </mesh>
+        }
     </group>
   )
 }
