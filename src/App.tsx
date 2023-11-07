@@ -13,13 +13,19 @@ function App() {
     
     
     const MyLight = () =>{
-        const {intensity,size, y, x } = useControls(
-            {
-                intensity: {value:2,min: 0, max: 4, step: 0.5},
-                size:{value:10,min: 4, max: 20, step: 2},
-                y: {value:100,min: 50, max: 150, step: 10},
-                x: {value:80,min: -100, max: 100, step: 10},
-            })
+        // const {intensity,size, y, x } = useControls(
+        //     {
+        //         intensity: {value:2,min: 0, max: 4, step: 0.5},
+        //         size:{value:10,min: 4, max: 20, step: 2},
+        //         y: {value:100,min: 50, max: 150, step: 10},
+        //         x: {value:80,min: -100, max: 100, step: 10},
+        //     })
+        
+        
+        const intensity =2
+        const size = 10
+        const y = 100
+        const x = 80
         
         const lightRef = useRef<HemisphereLight>(null!);
         useHelper(lightRef,HemisphereLightHelper,size,'red')

@@ -90,32 +90,39 @@ export const rotateAndNormalize = (vector:Vector3, azimuth:number, elevation:num
     return vectorToReturn
 }
 
-export const calcWallTurnFactor = (velocity:Vector3, desiredDirection:Vector3, turnFactor:number, maxVelocityLength:number) => {
+export const calcSteeringForce = (velocity:Vector3, desiredDirection:Vector3, turnFactor:number, maxVelocityLength:number) => {
     
     const _velocity = new Vector3(velocity.x,velocity.y,velocity.z)
     const _desiredDirection = new Vector3(desiredDirection.x,desiredDirection.y,desiredDirection.z)
 
+    
+   
     _desiredDirection.setLength(maxVelocityLength)
-
+    
     _desiredDirection.sub(_velocity)
 
+    
     _desiredDirection.setLength(turnFactor)
     
     return _desiredDirection
 }
 
 export const calcSeparationTurnFactor = (velocity:Vector3, desiredPosition:Vector3, turnFactor:number) => {
-    
     return subV(velocity,angularInterpolation(velocity,desiredPosition,turnFactor))
-    
 }
 
-export  const invertOnAxis = (vector:Vector3, axis:Axis|undefined = undefined, ) => {
+export const invertOnAxis = (vector:Vector3, axis:Axis|undefined = undefined, ) => {
     const inverted = new Vector3(vector.x,vector.y,vector.z)
     threeAxis.forEach((el)=>{
         inverted[el] =  axis === el ? inverted[el] : -inverted[el]
     })
     return inverted
+}
+
+export const applyInvertOnAxis = (vector:Vector3, axis:Axis|undefined = undefined, ) => {
+    threeAxis.forEach((el)=>{
+        vector[el] =  axis === el ? vector[el] : -vector[el]
+    })
 }
 
 export const createPointsOnSphere = (numPoints:number,pointsToSkip:number=0,numPointShown:number = 2, rotation:Euler ) =>{
@@ -142,3 +149,4 @@ export const createPointsOnSphere = (numPoints:number,pointsToSkip:number=0,numP
     
     return points
 }
+

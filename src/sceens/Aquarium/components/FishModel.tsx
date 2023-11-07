@@ -5,9 +5,9 @@ Command: npx gltfjsx@6.2.13 public/Models/Fish.gltf -t -r public
 
 import * as THREE from 'three'
 import React, { useRef } from 'react'
-import { useGLTF } from '@react-three/drei'
+import {Line, useGLTF} from '@react-three/drei'
 import { GLTF } from 'three-stdlib'
-import {Euler, Vector3} from 'three'
+import {Euler, Vector3, Group, Object3DEventMap} from 'three'
 import {MeshProps} from "@react-three/fiber";
 
 type GLTFResult = GLTF & {
@@ -30,7 +30,7 @@ type GLTFResult = GLTF & {
 }
 
 type FishProps = JSX.IntrinsicElements['group'] & {
-    pushRef?: (ref: any) => void,
+    pushRef?: (ref: Group) => void,
     velocity?: Vector3,
     position?: Vector3,
     acc?: Vector3,
@@ -44,7 +44,7 @@ export default function FishModel(props: FishProps) {
     //const initRotation = new Euler( Math.PI/2, 0, 0, 'XYZ' )
   return (
     <group {...props}
-            name={props.name}
+           name={props.name}
            dispose={null}
            ref={(ref)=>{
                if(ref && props.pushRef){
@@ -61,12 +61,25 @@ export default function FishModel(props: FishProps) {
       <mesh rotation={initRotation}  geometry={nodes.Plane005.geometry} material={materials['Material.001']} />
       <mesh rotation={initRotation}  geometry={nodes.Sphere.geometry} material={materials['Material.003']} />
       <mesh rotation={initRotation}  geometry={nodes.Sphere001.geometry} material={materials['Material.001']} />
-        {   props.name === "fish0" &&
-
-            <mesh visible={true} userData={{ hello: 'world' }}>
-                <sphereGeometry args={[10, 8, 8]} />
-                <meshStandardMaterial color="red" transparent={true} opacity={0.1} />
-            </mesh>
+        
+        {   
+            props.name === "fish0"
+            && (
+            <>
+                {/*<mesh visible={true} userData={{ hello: 'world' }}>*/}
+                {/*    <sphereGeometry args={[30, 8, 8]} />*/}
+                {/*    <meshStandardMaterial color="red" transparent={true} opacity={0.05} wireframe={true}/>*/}
+                {/*</mesh>*/}
+                <mesh visible={true} userData={{ hello: 'world' }}>
+                    <sphereGeometry args={[15, 8, 8]} />
+                    <meshStandardMaterial color="blue" transparent={true} opacity={0.05} wireframe={true}/>
+                </mesh>
+                <mesh visible={true} userData={{ hello: 'world' }}>
+                    <sphereGeometry args={[5, 8, 8]} />
+                    <meshStandardMaterial color="red" transparent={true} opacity={0.15} wireframe={true}/>
+                </mesh>
+            </>
+            )
         }
     </group>
   )
