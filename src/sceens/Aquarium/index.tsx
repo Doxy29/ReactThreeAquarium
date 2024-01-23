@@ -48,16 +48,16 @@ const Aquarium = () => {
     const fpMs = (1000/fps)
     
     const maxVelocityLength = 0.3 //  units/second
-    const avrgVelocityLength = 0.2 //  units/second
+    const avrgVelocityLength = 0.5 //  units/second
     const minVelocityLength = 0.0005
-    const aquariumSize:ThreeNumArray = [120,80,120]
+    const aquariumSize:ThreeNumArray = [200,120,200]
     
-    const turnRate =  maxVelocityLength/100
+    const turnRate =  avrgVelocityLength/80
     
     const turnWeightOptions = useCallback((initW:number, initR:number)=>{
         return {
             weight: {value: initW , min: 0, max: 2, step: 0.01},
-            range: {value: initR , min: 5, max: 30, step: 0.5}
+            range: {value: initR , min: 5, max: 30, step: 0.5},
         }
     },[])
     
@@ -67,7 +67,7 @@ const Aquarium = () => {
     const alignmentWeight = useRef<any>()
     
     
-     cohesionWeight.current = useControls("Cohesion", turnWeightOptions(1.2,15))
+     cohesionWeight.current = useControls("Cohesion", turnWeightOptions(1.2,15), )
      separationWeight.current = useControls("Separation", turnWeightOptions(1.40,9))
      alignmentWeight.current = useControls("Alignment", turnWeightOptions(0.9,8))
     
@@ -78,7 +78,7 @@ const Aquarium = () => {
             y:{min:0,max:0},
             z:{min:0,max:0}
         }
-        const barrierOffset = 0
+        const barrierOffset = 10
         threeAxis.forEach((axis,index)=>{
             barrier[axis] = {
                 min: barrierOffset - aquariumSize[index]/2,
@@ -100,7 +100,7 @@ const Aquarium = () => {
     }
 
     
-    const nrOfBoids = 300
+    const nrOfBoids = 400
 
     const boids:boid[] = useMemo(()=>{
         let boi = []
@@ -241,16 +241,19 @@ const Aquarium = () => {
             totalForces_Nr = 0
         }
         
-        // velocityLength = boid.velocity.length()
+        velocityLength = boid.velocity.length()
         // if(velocityLength > maxVelocityLength){
         //     boid.velocity.setLength(maxVelocityLength)
         // }
         
-       
+        if(Math.abs(boid.velocity.y) - Math.abs(boid.velocity.x) > 0 ||  Math.abs(boid.velocity.y) - Math.abs(boid.velocity.z) > 0){
+            boid.velocity.y += (turnRate * 0.05 * -Math.sign(boid.velocity.y))
+            boid.velocity.setLength(velocityLength)
+        }
         
         boid.position.add(boid.velocity)
 
-        teleportWall(boid)
+        avoidWall(boid)
         
         const azimuth = Math.atan2(boid.velocity.z * -1,boid.velocity.x)
         const elevation = -boid.velocity.angleTo(yAxis)
@@ -278,10 +281,10 @@ const Aquarium = () => {
     const avoidWall = (boid:boid) =>{
         threeAxis.forEach((axis)=>{
             if(boid.position[axis] > barrier[axis].max) {
-                boid.position[axis] = barrier[axis].min
+                boid.velocity[axis] -= (turnRate *1.5)
             }
             if(boid.position[axis] < barrier[axis].min) {
-                boid.position[axis] = barrier[axis].max
+                boid.velocity[axis] += (turnRate *1.5)
             }
         })
     }
@@ -316,7 +319,7 @@ const Aquarium = () => {
                {/*<PointViewer/>*/}
                
                <FishBowl 
-                   //pushRef={(ref)=> bowlRef.current.push(ref)} 
+                   pushRef={(ref)=> bowlRef.current.push(ref)} 
                    args={aquariumSize}
                />
                <InstancedMeshComponent

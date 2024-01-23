@@ -9,6 +9,7 @@ const InstancedMeshComponent = ({count = 100, pushRef=(ref:any)=>{}})=>{
     
     return (
         <instancedMesh 
+            castShadow={true}
             ref={(ref:InstancedMesh)=>{
                 if(ref){
                     pushRef(ref)
