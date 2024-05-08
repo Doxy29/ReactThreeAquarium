@@ -1,55 +1,38 @@
 import FishBowl from "./components/FishBowl";
-import React, {useCallback, useEffect, useMemo, useRef} from "react";
+import React, { useCallback, useMemo, useRef} from "react";
 //import Fish from "./components/Fish";
-import FishModel from "./components/FishModel";
 import {
-    addV, subV,
-    applyInvertOnAxis,
-    calcSteeringForce,
-    createPointsOnSphere,
-    randomFishVelocity,
     randomVector3,
-    rotateAndNormalize, ThreeNumArray
+    ThreeNumArray
 } from "../../Utilities";
 import {useFrame} from "@react-three/fiber";
 import {
     Vector3,
-    Euler,
-    Raycaster,
-    Group, 
-    Object3D, 
-    InstancedMesh
+    Object3D,
+    InstancedMesh, Mesh
 } from "three";
 import {threeAxis, yAxis} from "../../Utilities/Constants";
-import Obstacles from "./components/Obstacles";
 import {useControls} from "leva";
-import ClownFish from "./components/ClownFish";
-import PointViewer from "../Helpers/PointViewer";
-import LineTester from "../Helpers/LineTester";
 import InstancedMeshComponent from "./components/InstancedMeshComponent";
-import {sub} from "three/examples/jsm/nodes/shadernode/ShaderNodeBaseElements";
-//import {Line} from "@react-three/drei"
-import {cloneDeep} from "lodash"
+import {PerspectiveCamera} from "@react-three/drei";
+
 
 
 const dummy = new Object3D()
 
 
-
-
-
 const Aquarium = () => {
 
-    
+    const nrOfBoids = 400
 
     //Constants for control---------------------------------------------------------------//
     
-    const fps = 165
-    const fpMs = (1000/fps)
+    //const fps = 165
+    //const fpMs = (1000/fps)
     
-    const maxVelocityLength = 0.3 //  units/second
-    const avrgVelocityLength = 0.5 //  units/second
-    const minVelocityLength = 0.0005
+    //const maxVelocityLength = 0.3 //  units/second
+    const avrgVelocityLength = 0.2 //  units/second
+    //const minVelocityLength = 0.0005
     const aquariumSize:ThreeNumArray = [200,120,200]
     
     const turnRate =  avrgVelocityLength/80
@@ -65,11 +48,16 @@ const Aquarium = () => {
     const cohesionWeight = useRef<any>()
     const separationWeight = useRef<any>()
     const alignmentWeight = useRef<any>()
+    const followBoid = useRef<any>()
     
     
      cohesionWeight.current = useControls("Cohesion", turnWeightOptions(1.2,15), )
      separationWeight.current = useControls("Separation", turnWeightOptions(1.40,9))
      alignmentWeight.current = useControls("Alignment", turnWeightOptions(0.9,8))
+    followBoid.current = useControls("followBoid", {
+         follow: {value: false },
+         boidIndex: {value: 1 , min: 1, max: nrOfBoids , step: 1},
+     })
     
     //Constants---------------------------------------------------------------//
     
@@ -78,7 +66,7 @@ const Aquarium = () => {
             y:{min:0,max:0},
             z:{min:0,max:0}
         }
-        const barrierOffset = 10
+        const barrierOffset = 20
         threeAxis.forEach((axis,index)=>{
             barrier[axis] = {
                 min: barrierOffset - aquariumSize[index]/2,
@@ -100,7 +88,7 @@ const Aquarium = () => {
     }
 
     
-    const nrOfBoids = 400
+    
 
     const boids:boid[] = useMemo(()=>{
         let boi = []
@@ -120,7 +108,8 @@ const Aquarium = () => {
     
     
     const boidsRef = useRef<InstancedMesh>(new InstancedMesh(undefined, undefined, nrOfBoids))
-    const bowlRef = useRef<any[]>([])
+    const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
+    const bowlRef = useRef<Mesh[]>([])
     
     //Reusable Declarations---------------------------------------------------------------//
     let velocityLength = 0
@@ -143,7 +132,7 @@ const Aquarium = () => {
     
     
     let show = 0
-    
+    let prevPosition = new Vector3()
     
     //------------------------------------------------------------------------//
     const myLog = (str:string,index:number,num:number,arr:any)=>{
@@ -159,7 +148,10 @@ const Aquarium = () => {
         //Add all forces
         boids.forEach((otherBoid, otherIndex)=>{
             
+            if (index === followBoid.current.boidIndex - 1) prevPosition.copy(boid.position)
+            
             if(index !== otherIndex){
+                
                 vectorToOtherBoid.subVectors(otherBoid.position,boid.position)
                 distanceFromOtherBoid = vectorToOtherBoid.length()
 
@@ -195,6 +187,7 @@ const Aquarium = () => {
             if(separationForce.length() > avrgVelocityLength ){
                 separationForce.setLength(avrgVelocityLength)
             }
+            
             separationForce.sub(boid.velocity)
             
             const turn = turnRate * separationWeight.current.weight
@@ -263,11 +256,13 @@ const Aquarium = () => {
         dummy.position.set(boid.position.x,boid.position.y,boid.position.z)
         dummy.rotation.set(0,azimuth,elevation, 'YZX')
         dummy.updateMatrix()
-        
+        if(followBoid.current.follow && cameraRef.current && index === followBoid.current.boidIndex - 1){
+            prevPosition = new Vector3().copy(prevPosition).sub(dummy.position).setLength(20).add(prevPosition).add(new Vector3(0,5,0))
+            cameraRef.current?.position.set(prevPosition.x, prevPosition.y, prevPosition.z) 
+            cameraRef.current?.lookAt(new Vector3().addVectors(dummy.position, new Vector3(0,5,0))) 
+        }
+       
         boidsRef.current.setMatrixAt(index, dummy.matrix)
-        
-
-        
     }
     
     //ROTATE BOID---------------------------------------------------------------------------------------------
@@ -281,10 +276,10 @@ const Aquarium = () => {
     const avoidWall = (boid:boid) =>{
         threeAxis.forEach((axis)=>{
             if(boid.position[axis] > barrier[axis].max) {
-                boid.velocity[axis] -= (turnRate *1.5)
+                boid.velocity[axis] -= (turnRate *0.6)
             }
             if(boid.position[axis] < barrier[axis].min) {
-                boid.velocity[axis] += (turnRate *1.5)
+                boid.velocity[axis] += (turnRate *0.6)
             }
         })
     }
@@ -328,7 +323,7 @@ const Aquarium = () => {
                        boidsRef.current = ref
                    }} 
                />
-               
+               <PerspectiveCamera ref={cameraRef} makeDefault fov={80} />
            </>
         
     )

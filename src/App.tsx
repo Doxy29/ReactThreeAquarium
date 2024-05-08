@@ -6,7 +6,7 @@ import {Plane, Stats, useHelper, useTexture} from "@react-three/drei";
 import Aquarium from "./sceens/Aquarium";
 import {useControls} from "leva";
 import Terrain from "./sceens/Aquarium/components/Terrain";
-import {GizmoHelper, GizmoViewport} from "@react-three/drei"
+import {GizmoHelper, GizmoViewcube} from "@react-three/drei"
 
 
 function App() {
@@ -45,7 +45,7 @@ function App() {
               {/*<Terrain/>*/}
               <MyLight />
               <GizmoHelper alignment="bottom-right" margin={[100, 100]}>
-                  <GizmoViewport labelColor="white" axisHeadScale={1} />
+                  <GizmoViewcube  />
               </GizmoHelper>
           </Canvas>
       </>

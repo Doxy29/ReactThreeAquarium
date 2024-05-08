@@ -16,6 +16,7 @@ const FishBowl = ({
     const material = new MeshStandardMaterial()
     material.wireframe = true
     material.side = BackSide
+    material.transparent=true
     
     
     return (
