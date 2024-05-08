@@ -148,7 +148,7 @@ const Aquarium = () => {
         //Add all forces
         boids.forEach((otherBoid, otherIndex)=>{
             
-            if (index === followBoid.current.boidIndex - 1) prevPosition.copy(boid.position)
+            if (index === followBoid.current.boidIndex - 1 && followBoid.current.follow) prevPosition.copy(boid.position)
             
             if(index !== otherIndex){
                 
