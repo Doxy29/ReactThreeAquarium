@@ -39,9 +39,9 @@ function App() {
       <>
          
           <Canvas shadows >
+              <ControllableCamera />
               <Aquarium />
               <Stats />
-              <ControllableCamera />
               {/*<Terrain/>*/}
               <MyLight />
               <GizmoHelper alignment="bottom-right" margin={[100, 100]}>

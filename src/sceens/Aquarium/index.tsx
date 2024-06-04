@@ -48,7 +48,7 @@ const Aquarium = () => {
     const cohesionWeight = useRef<any>()
     const separationWeight = useRef<any>()
     const alignmentWeight = useRef<any>()
-    const followBoid = useRef<any>()
+    const followBoid = useRef<any>({follow:false})
     
     
      cohesionWeight.current = useControls("Cohesion", turnWeightOptions(1.2,15), )
@@ -323,7 +323,7 @@ const Aquarium = () => {
                        boidsRef.current = ref
                    }} 
                />
-               <PerspectiveCamera ref={cameraRef} makeDefault fov={80} />
+               <PerspectiveCamera ref={cameraRef} position={[0,30,60]} makeDefault fov={80} />
            </>
         
     )
