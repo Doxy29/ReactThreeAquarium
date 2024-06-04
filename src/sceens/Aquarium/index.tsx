@@ -323,7 +323,7 @@ const Aquarium = () => {
                        boidsRef.current = ref
                    }} 
                />
-               <PerspectiveCamera ref={cameraRef} position={[0,30,60]} makeDefault fov={80} />
+               <PerspectiveCamera ref={cameraRef} position={[0,90,170]} makeDefault fov={80} />
            </>
         
     )
